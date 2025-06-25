@@ -1,0 +1,62 @@
+{
+    "name": "worker-scaffold",
+    "version": "0.1.0",
+    "src/main": "index.ts",
+    "license": "MIT",
+    "author": "",
+    "scripts": {
+        "dev": "nodemon --watch 'api/**/*.ts' --exec tsx --inspect node_modules/edge.libx.js/src/helpers/localServer.ts api/adapters/debug.ts",
+        "serve:vercel": "NODE_ENV=preview vercel dev --listen 8080",
+        "deploy:vercel": "vercel",
+        "serve:cloudflare": "wrangler dev --port 8080",
+        "deploy:cloudflare": "wrangler deploy",
+        "wrangler:generate-types": "wrangler types",
+        "ngrok": "ngrok http http://localhost:8080",
+        "deploy:prod": "vercel --prod",
+        "set-secrets": "set-secrets .env.preview preview \"vercel env add\" remove",
+        "set-secrets:prod": "set-secrets .env.production production \"vercel env add\" remove",
+        "format": "prettier --config .prettierrc 'src/**/*.ts' 'tests/**/*.ts' --write",
+        "build": "tsc",
+        "watch": "tsc -w",
+        "main": "node build/index.js",
+        "test": "jest",
+        "test:debug": "node --inspect ./node_modules/jest/bin/jest.js --runInBand --colors --verbose",
+        "test:ci": "jest --ci --reporters=default --reporters=jest-junit --coverage --coverageReporters=cobertura --coverageReporters=html",
+        "bump": "./bump.sh"
+    },
+    "files": [
+        "build/**",
+        "dist/**",
+        "src/**",
+        "*.js",
+        "*.ts"
+    ],
+    "dependencies": {
+        "@whatwg-node/server": "^0.10.10",
+        "edge.libx.js": "^0.2.0",
+        "express": "^5.1.0",
+        "itty-router": "^5.0.18",
+        "libx.js": "^5.1.0"
+    },
+    "devDependencies": {
+        "@types/jest": "^29.5.14",
+        "@types/node": "^24.0.1",
+        "jest": "^29.7.0",
+        "jest-junit": "^16.0.0",
+        "jest-junit-reporter": "^1.1.0",
+        "nodemon": "^3.1.10",
+        "prettier": "^3.3.3",
+        "ts-jest": "^29.2.5",
+        "typescript": "^5.6.3",
+        "wrangler": "^4.20.3"
+    },
+    "jest-junit": {
+        "suiteName": "jest tests",
+        "outputDirectory": "build/test_reports",
+        "output": "./.tmp/test/TEST-RESULTS.xml",
+        "classNameTemplate": "{classname} - {title}",
+        "titleTemplate": "{classname} - {title}",
+        "ancestorSeparator": " > ",
+        "usePathForSuiteName": "true"
+    }
+}

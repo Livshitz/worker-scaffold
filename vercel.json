@@ -1,0 +1,52 @@
+{
+	"framework": null,
+	"installCommand": "bun run preinstall && bun install",
+	"ignoreCommand": "bash ./ignore.sh api ./middleware.ts ./vercel.json ./package.json",
+	"builds": [
+		{
+			"src": "/api/adapters/*",
+			"use": "@vercel/node"
+		}
+	],
+	"crons": [
+		{
+			"path": "/api/sessions/cleanup",
+			"schedule": "0 2 * * *"
+		}
+	],
+	"rewrites": [
+		{
+			"source": "/(.*)?",
+			"destination": "/api/adapters/vercel.ts"
+		},
+		{
+			"source": "/api/([^/]+)/:path*",
+			"destination": "/api/$1.ts"
+		}
+	],
+	"trailingSlash": false,
+	"cleanUrls": true,
+	"headers": [
+		{
+			"source": "/(.*)",
+			"headers": [
+				{
+					"key": "Access-Control-Allow-Credentials",
+					"value": "true"
+				},
+				{
+					"key": "Access-Control-Allow-Origin",
+					"value": "*"
+				},
+				{
+					"key": "Access-Control-Allow-Methods",
+					"value": "*"
+				},
+				{
+					"key": "Access-Control-Allow-Headers",
+					"value": "*"
+				}
+			]
+		}
+	]
+}

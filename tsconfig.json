@@ -1,0 +1,43 @@
+{
+    "compilerOptions": {
+        "target": "esnext",
+        "useDefineForClassFields": true,
+        "module": "ES2020",
+        // "module": "esnext",
+        "lib": [
+            "ES2020",
+            "DOM",
+            "DOM.Iterable",
+            "esnext"
+        ],
+        "skipLibCheck": true,
+        /* Bundler mode */
+        "esModuleInterop": true,
+        "moduleResolution": "node",
+        // "allowImportingTsExtensions": true,
+        "resolveJsonModule": true,
+        "isolatedModules": true,
+        "noEmit": true,
+        "jsx": "preserve",
+        // "jsx": "react",
+        "incremental": true,
+        "types": [
+            "jest",
+            // "worker-configuration.d.ts",
+            "node"
+        ],
+        "allowSyntheticDefaultImports": true,
+        "forceConsistentCasingInFileNames": true,
+        /* Linting */
+        "strict": false,
+        "strictNullChecks": false,
+        "noUnusedLocals": false,
+        "noUnusedParameters": false,
+        "noFallthroughCasesInSwitch": true
+    },
+    "include": [
+        "global.d.ts",
+        "api/**/*.ts",
+        "api/**/*.tsx",
+    ]
+}
