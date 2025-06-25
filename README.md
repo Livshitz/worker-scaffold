@@ -46,7 +46,6 @@ Check the template example in `api/v1/@template`.
 
 Create a new file in `api/routes/v1/`.
 
-```ts
 ## Directory Structure
 
 - `api/routes/v1/` — Your edge API route modules
