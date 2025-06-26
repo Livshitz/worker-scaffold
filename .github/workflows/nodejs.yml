@@ -48,6 +48,7 @@ jobs:
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          preCommands: echo "deploy --name ${{ github.repository }}-${{ github.ref_name }}"
           command: deploy --name "${{ github.repository }}-${{ github.ref_name }}"
        
     
