@@ -51,6 +51,13 @@ Create a new file in `api/routes/v1/`.
 - `api/routes/v1/` — Your edge API route modules
 - `tests/` — Jest/Bun test files for your routes
 
+## CI/CD:
+- **Cloudflare**: set up auth API token and set the env secrets for `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID`.  
+Guide: https://developers.cloudflare.com/workers/ci-cd/external-cicd/github-actions/  
+  
+- **Vercel**: connect your repo to Vercel project, it'll handle the CI/CD.  
+Guide: https://vercel.com/docs/git/vercel-for-github
+
 ## Scaffolded With
 
 [🏗 worker-scaffold](https://github.com/Livshitz/worker-scaffold)
