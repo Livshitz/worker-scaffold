@@ -14,41 +14,39 @@ A modern scaffold for building new **worker edge web services** with TypeScript,
 
 ## Quick Start
 
-## Scaffolding a New Worker
+### Scaffolding a New Worker
 
 You can scaffold a new worker project using the built-in CLI.
 
-### Usage
+1. Run interactive Create script with Bun or npx:
 
-Run with Bun or npx:
+    ```sh
+    bunx https://github.com/Livshitz/worker-scaffold
+    ```
 
-```sh
-bunx create-worker --yes --name=my-worker --provider=cloudflare
-```
+    Or pass arguments for non-interactive scaffolding:
 
-#### CLI Options
-- `--yes` / `-y`: Non-interactive mode (no prompts)
-- `--name` / `-n`: Name of the new worker
-- `--provider` / `-p`: Provider to scaffold for (`cloudflare`, `vercel`, or `both`)
+    #### CLI Options:
+    - `--yes` / `-y`: Non-interactive mode (no prompts)
+    - `--name` / `-n`: Name of the new worker
+    - `--provider` / `-p`: Provider to scaffold for (`cloudflare`, `vercel`, or `both`)
 
-If you omit `--yes`, the CLI will prompt for these values interactively.
+        ##### Example:
+        ```sh
+        bunx https://github.com/Livshitz/worker-scaffold --yes --name=api-worker --provider=both
+        ```
 
-### Example
+<!-- 
+1. **Create this scaffold:**
 
-```sh
-bunx create-worker --yes --name=api-worker --provider=both
-```
-
-1. **Clone this scaffold:**
-
-   ```sh
    $ git clone --depth=1 git@github.com:Livshitz/worker-scaffold.git worker-scaffold-temp && rm -rf worker-scaffold-temp/.git
-   $ mv worker-scaffold-temp <new folder name>
-   ```
+$ mv worker-scaffold-temp <new folder name> 
+-->
 
 2. **Install dependencies:**
 
    ```sh
+   cd new-worker
    bun install
    ```
 
