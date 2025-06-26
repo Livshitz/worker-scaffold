@@ -17,3 +17,6 @@ yarn.lock
 
 .wrangler/
 .vercel/
+
+.env
+.env.*
