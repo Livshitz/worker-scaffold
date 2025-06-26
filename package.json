@@ -37,7 +37,8 @@
         "express": "^5.1.0",
         "itty-router": "^5.0.18",
         "libx.js": "^5.1.0",
-        "minimist": "^1.2.8"
+        "minimist": "^1.2.8",
+        "prompts": "^2.4.2"
     },
     "devDependencies": {
         "@types/jest": "^29.5.14",
@@ -47,7 +48,6 @@
         "jest-junit-reporter": "^1.1.0",
         "nodemon": "^3.1.10",
         "prettier": "^3.3.3",
-        "prompts": "^2.4.2",
         "ts-jest": "^29.2.5",
         "typescript": "^5.6.3",
         "wrangler": "^4.20.3"
