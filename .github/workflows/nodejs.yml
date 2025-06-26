@@ -42,14 +42,17 @@ jobs:
       #     echo "Deploying Worker: $WORKER_NAME"
 
       #     wrangler deploy --name "$WORKER_NAME"
-      
+
+      - name: Set repo name only
+        run: echo "REPO_NAME=${GITHUB_REPOSITORY##*/}" >> $GITHUB_ENV
+
       - name: Deploy with custom name
         uses: cloudflare/wrangler-action@v3
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          preCommands: echo "deploy --name ${{ github.repository }}-${{ github.ref_name }}"
-          command: deploy --name "${{ github.repository }}-${{ github.ref_name }}"
+          preCommands: echo "deploy --name ${{ env.REPO_NAME }}_${{ github.ref_name }}"
+          command: deploy --name "${{ env.REPO_NAME }}_${{ github.ref_name }}"
        
     
     # steps:
