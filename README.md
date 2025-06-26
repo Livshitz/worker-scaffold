@@ -14,6 +14,31 @@ A modern scaffold for building new **worker edge web services** with TypeScript,
 
 ## Quick Start
 
+## Scaffolding a New Worker
+
+You can scaffold a new worker project using the built-in CLI.
+
+### Usage
+
+Run with Bun or npx:
+
+```sh
+bunx create-worker --yes --name=my-worker --provider=cloudflare
+```
+
+#### CLI Options
+- `--yes` / `-y`: Non-interactive mode (no prompts)
+- `--name` / `-n`: Name of the new worker
+- `--provider` / `-p`: Provider to scaffold for (`cloudflare`, `vercel`, or `both`)
+
+If you omit `--yes`, the CLI will prompt for these values interactively.
+
+### Example
+
+```sh
+bunx create-worker --yes --name=api-worker --provider=both
+```
+
 1. **Clone this scaffold:**
 
    ```sh
@@ -39,6 +64,7 @@ A modern scaffold for building new **worker edge web services** with TypeScript,
 
 5. **Build & deploy:**
    - Use your preferred edge platform (Cloudflare, Vercel, etc.)
+
 
 ## Example: Adding a Route
 

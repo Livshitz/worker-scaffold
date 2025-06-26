@@ -36,7 +36,8 @@
         "edge.libx.js": "^0.2.0",
         "express": "^5.1.0",
         "itty-router": "^5.0.18",
-        "libx.js": "^5.1.0"
+        "libx.js": "^5.1.0",
+        "minimist": "^1.2.8"
     },
     "devDependencies": {
         "@types/jest": "^29.5.14",
@@ -58,5 +59,8 @@
         "titleTemplate": "{classname} - {title}",
         "ancestorSeparator": " > ",
         "usePathForSuiteName": "true"
+    },
+    "bin": {
+        "create-worker": "bin/create-worker.ts"
     }
 }
