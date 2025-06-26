@@ -13,13 +13,48 @@ jobs:
       CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
     steps:
       - uses: actions/checkout@v4
-      - name: Install Bun
-        run: |
-          curl -fsSL https://bun.sh/install | bash
-          echo "$HOME/.bun/bin" >> $GITHUB_PATH
-      - name: Build & Deploy Worker
-        if: env.CLOUDFLARE_API_TOKEN != '' && env.CLOUDFLARE_ACCOUNT_ID != '' && !contains(github.event.head_commit.message, '[skip-ci]')
+      # - name: Install Wrangler
+      #   run: npm install -g wrangler
+
+      # - name: Deploy with branch-specific name
+      #   # if: env.CLOUDFLARE_API_TOKEN != '' && env.CLOUDFLARE_ACCOUNT_ID != '' && !contains(github.event.head_commit.message, '[skip-ci]')
+      #   # run: |
+      #   #   BRANCH_NAME=${GITHUB_REF##*/}
+      #   #   SLUG=$(echo $BRANCH_NAME | sed 's/[^a-zA-Z0-9]/-/g' | tr '[:upper:]' '[:lower:]')
+      #   #   wrangler deploy --name "my-worker-${SLUG}"
+        
+      #   env:
+      #     # NOTE: Make sure to set up your secrets in Github
+      #     apiToken: ${{ env.CLOUDFLARE_API_TOKEN }}
+      #     accountId: ${{ env.CLOUDFLARE_ACCOUNT_ID }}
+          
+      #   run: |
+      #     REPO_NAME=$(basename $GITHUB_REPOSITORY)
+      #     BRANCH_NAME=${GITHUB_REF##*/}
+      #     SLUG=$(echo $BRANCH_NAME | sed 's/[^a-zA-Z0-9]/-/g' | tr '[:upper:]' '[:lower:]')
+      #     WORKER_NAME="${REPO_NAME}-${SLUG}"
+
+      #     echo "Deploying Worker: $WORKER_NAME"
+
+      #     wrangler deploy --name "$WORKER_NAME"
+      
+      - name: Deploy with custom name
         uses: cloudflare/wrangler-action@v3
         with:
-          apiToken: ${{ env.CLOUDFLARE_API_TOKEN }}
-          accountId: ${{ env.CLOUDFLARE_ACCOUNT_ID }}
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          command: deploy --name "${{ github.repository }}-${{ github.ref_name }}"
+       
+    
+    # steps:
+    #   - uses: actions/checkout@v4
+    #   - name: Install Bun
+    #     run: |
+    #       curl -fsSL https://bun.sh/install | bash
+    #       echo "$HOME/.bun/bin" >> $GITHUB_PATH
+    #   - name: Build & Deploy Worker
+    #     if: env.CLOUDFLARE_API_TOKEN != '' && env.CLOUDFLARE_ACCOUNT_ID != '' && !contains(github.event.head_commit.message, '[skip-ci]')
+    #     uses: cloudflare/wrangler-action@v3
+    #     with:
+    #       apiToken: ${{ env.CLOUDFLARE_API_TOKEN }}
+    #       accountId: ${{ env.CLOUDFLARE_ACCOUNT_ID }}
