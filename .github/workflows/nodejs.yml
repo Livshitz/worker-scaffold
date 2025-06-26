@@ -37,5 +37,5 @@ jobs:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           preCommands: echo "deploy --name ${{ env.REPO_NAME }}_${{ env.SANITIZED_REF }}"
-          command: deploy --name "${{ env.REPO_NAME }}_${{ env.SANITIZED_REF }}"
+          command: deploy --name "${{ env.SANITIZED_REF }}-${{ env.REPO_NAME }}"
        
