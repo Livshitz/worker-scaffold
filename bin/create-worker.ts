@@ -1,4 +1,4 @@
-#!/usr/bin/env bun
+#!/usr/bin/env -S bunx tsx
 
 import { existsSync, readdirSync, rmSync, readFileSync, writeFileSync, statSync, copyFileSync, mkdirSync } from 'fs';
 import { join, resolve } from 'path';

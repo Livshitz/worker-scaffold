@@ -64,6 +64,6 @@
         "usePathForSuiteName": "true"
     },
     "bin": {
-        "create-worker": "bin/create-worker.js"
+        "create-worker": "bin/create-worker.ts"
     }
 }
