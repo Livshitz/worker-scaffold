@@ -47,12 +47,20 @@ const argProvider = argv.provider || argv.p;
 		process.exit(1);
 	}
 
+	console.log(`\n[worker-scaffold] Initializing worker project: '${workerName}' (provider: ${provider}${mergeMode ? ', merge mode' : ''})`);
+
+	if (mergeMode) {
+		console.log('[worker-scaffold] Merge mode enabled: only files matching patterns in the merge file will be processed.');
+	}
+
 	// 1. Clone the template repo to temp
+	console.log('[worker-scaffold] Cloning template repository...');
 	const repoUrl = 'https://github.com/Livshitz/worker-scaffold.git';
 	const tempDir = join(process.cwd(), `.tmp/scaffold-tmp-${Date.now()}`);
 	execSync(`git clone --depth=1 ${repoUrl} ${tempDir}`, { stdio: 'inherit' });
 
 	// 2. Remove .git from temp
+	console.log('[worker-scaffold] Removing .git directory from template...');
 	rmSync(join(tempDir, '.git'), { recursive: true, force: true });
 
 	// 3. Read merge globs
@@ -60,12 +68,15 @@ const argProvider = argv.provider || argv.p;
 	const mergeFile = join(tempDir, 'merge');
 	if (existsSync(mergeFile)) {
 		mergeGlobs = readFileSync(mergeFile, 'utf8').split(/\r?\n/).map(l => l.trim()).filter(Boolean);
+		if (mergeMode) {
+			console.log(`[worker-scaffold] Merge patterns loaded: ${mergeGlobs.join(', ')}`);
+		}
 	}
 
 	const mergeConflicts: string[] = [];
 	function shouldMerge(relPath: string) {
-		// Normalize to remove leading './' or '/'
-		const norm = relPath.replace(/^\.?\/?/, '');
+		// Normalize to remove leading './' or '/' but preserve dots in filenames
+		const norm = relPath.replace(/^\.\//, '').replace(/^\//, '');
 		return mergeGlobs.some(pattern => minimatch(norm, pattern));
 	}
 
@@ -73,7 +84,9 @@ const argProvider = argv.provider || argv.p;
 	function copyOrMerge(src: string, dest: string, relPath: string) {
 		const stat = statSync(src);
 		if (stat.isDirectory()) {
-			if (mergeMode && !shouldMerge(relPath + '/')) return; // Only process dirs in merge globs
+			// For directories, check if the dir itself or its contents should be merged
+			const dirShouldMerge = shouldMerge(relPath) || shouldMerge(relPath + '/') || shouldMerge(relPath + '/**');
+			if (mergeMode && !dirShouldMerge) return;
 			if (!existsSync(dest)) {
 				mkdirSync(dest, { recursive: true });
 			}
@@ -81,7 +94,9 @@ const argProvider = argv.provider || argv.p;
 				copyOrMerge(join(src, file), join(dest, file), join(relPath, file));
 			}
 		} else {
-			if (mergeMode && !shouldMerge(relPath)) return; // Only process files in merge globs
+			// For files, check if they should be merged
+			const fileShouldMerge = shouldMerge(relPath);
+			if (mergeMode && !fileShouldMerge) return;
 			const mergeNeeded = shouldMerge(relPath);
 			if (!existsSync(dest)) {
 				// Ensure parent directory exists
@@ -90,12 +105,14 @@ const argProvider = argv.provider || argv.p;
 					mkdirSync(parentDir, { recursive: true });
 				}
 				copyFileSync(src, dest);
+				if (mergeMode) console.log(`[worker-scaffold] Copied: ${relPath}`);
 			} else if (mergeNeeded) {
 				const existing = readFileSync(dest, 'utf8');
 				const scaffold = readFileSync(src, 'utf8');
 				if (existing !== scaffold) {
 					mergeConflicts.push(relPath);
 					writeFileSync(dest + '.scaffold', scaffold, 'utf8');
+					console.log(`[worker-scaffold] Merge conflict: ${relPath} (scaffold version saved as .scaffold)`);
 				}
 			}
 		}
@@ -121,37 +138,48 @@ const argProvider = argv.provider || argv.p;
 	copyDir(tempDir, targetDir);
 
 	// 5. Remove temp dir
+	console.log('[worker-scaffold] Cleaning up temporary files...');
 	rmSync(tempDir, { recursive: true, force: true });
 
 	// 6. Print merge report
 	if (mergeMode && mergeConflicts.length) {
-		console.log('The following files require manual merging:');
+		console.log('\n[worker-scaffold] The following files require manual merging:');
 		mergeConflicts.forEach(f => console.log('  -', f));
-		console.log('Scaffold versions have been saved as .scaffold files.');
+		console.log('[worker-scaffold] Scaffold versions have been saved as .scaffold files.');
 	}
 
-	// 7. Continue with provider-specific cleanup and config updates as before
-	// 3. Remove irrelevant adapters/configs
+	// 7. Provider-specific cleanup and config updates (always run, both modes)
+	console.log(`[worker-scaffold] Cleaning up adapters and config files for provider: ${provider}...`);
 	const adaptersPath = join(targetDir, 'api', 'adapters');
 	if (existsSync(adaptersPath)) {
 		if (provider === 'cloudflare') {
 			for (const file of readdirSync(adaptersPath)) {
 				if (!['cloudflare.ts', 'debug.ts'].includes(file)) {
 					rmSync(join(adaptersPath, file));
+					console.log(`[worker-scaffold] Removed adapter: api/adapters/${file}`);
 				}
 			}
 			const vercelJson = join(targetDir, 'vercel.json');
-			if (existsSync(vercelJson)) rmSync(vercelJson);
+			if (existsSync(vercelJson)) {
+				rmSync(vercelJson);
+				console.log('[worker-scaffold] Removed: vercel.json');
+			}
 		} else if (provider === 'vercel') {
 			for (const file of readdirSync(adaptersPath)) {
 				if (!['vercel.ts', 'debug.ts'].includes(file)) {
 					rmSync(join(adaptersPath, file));
+					console.log(`[worker-scaffold] Removed adapter: api/adapters/${file}`);
 				}
 			}
 			const wranglerToml = join(targetDir, 'wrangler.toml');
-			if (existsSync(wranglerToml)) rmSync(wranglerToml);
+			if (existsSync(wranglerToml)) {
+				rmSync(wranglerToml);
+				console.log('[worker-scaffold] Removed: wrangler.toml');
+			}
 		}
 	}
+
+	console.log(`\n[worker-scaffold] Worker project '${workerName}' is ready!`);
 
 	// 4. Update package.json name
 	const pkgPath = join(targetDir, 'package.json');
