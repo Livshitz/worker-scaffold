@@ -101,6 +101,8 @@ bunx https://github.com/Livshitz/worker-scaffold --merge
   - Leave your file untouched.
   - Save the scaffold version as `filename.scaffold` (e.g., `package.json.scaffold`).
   - Print a list of files that require manual merging.
+- **Provider selection is respected in merge mode:**
+  - After merging, only the relevant adapters and config files for your chosen provider (`cloudflare`, `vercel`, or `both`) are kept. Irrelevant files are removed automatically.
 
 **You should manually review and merge the `.scaffold` files as needed.**
 
@@ -109,5 +111,6 @@ bunx https://github.com/Livshitz/worker-scaffold --merge
 The following files require manual merging:
   - package.json
   - wrangler.toml
+  - vercel.json
 Scaffold versions have been saved as .scaffold files.
 ```
