@@ -1,4 +1,4 @@
-api/
-.github/
+api/**
+.github/**
 vercel.json
 wrangler.toml
