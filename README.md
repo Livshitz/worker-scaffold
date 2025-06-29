@@ -88,3 +88,26 @@ Create a new file in `api/routes/v1/`.
 ## Scaffolded With
 
 [🏗 worker-scaffold](https://github.com/Livshitz/worker-scaffold)
+
+## Initializing in an Existing Project (Merge Mode)
+
+You can initialize the worker scaffold in an existing project using the `--merge` flag:
+
+```sh
+bunx https://github.com/Livshitz/worker-scaffold --merge
+```
+
+- The CLI will copy new files and, for files/folders listed in the `merge` file, if a file already exists and differs, it will:
+  - Leave your file untouched.
+  - Save the scaffold version as `filename.scaffold` (e.g., `package.json.scaffold`).
+  - Print a list of files that require manual merging.
+
+**You should manually review and merge the `.scaffold` files as needed.**
+
+##### Example output:
+```
+The following files require manual merging:
+  - package.json
+  - wrangler.toml
+Scaffold versions have been saved as .scaffold files.
+```

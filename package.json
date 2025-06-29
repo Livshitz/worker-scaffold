@@ -35,8 +35,10 @@
         "@whatwg-node/server": "^0.10.10",
         "edge.libx.js": "^0.2.0",
         "express": "^5.1.0",
+        "fast-glob": "^3.3.3",
         "itty-router": "^5.0.18",
         "libx.js": "^5.1.0",
+        "minimatch": "^10.0.3",
         "minimist": "^1.2.8",
         "prompts": "^2.4.2"
     },

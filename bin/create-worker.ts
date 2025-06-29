@@ -1,13 +1,15 @@
 #!/usr/bin/env bun
 
-import { existsSync, readdirSync, rmSync, readFileSync, writeFileSync } from 'fs';
+import { existsSync, readdirSync, rmSync, readFileSync, writeFileSync, statSync, copyFileSync, mkdirSync } from 'fs';
 import { join, resolve } from 'path';
 import prompts from 'prompts';
 import minimist from 'minimist';
 import { execSync } from 'child_process';
+import { minimatch } from 'minimatch';
 
 const argv = minimist(process.argv.slice(2));
 const yesMode = argv.yes || argv.y;
+const mergeMode = argv.merge || false;
 const argWorkerName = argv.name || argv.n;
 const argProvider = argv.provider || argv.p;
 
@@ -40,41 +42,124 @@ const argProvider = argv.provider || argv.p;
 	}
 
 	const targetDir = resolve(process.cwd(), workerName);
-	if (existsSync(targetDir)) {
-		console.error(`Directory '${workerName}' already exists.`);
+	if (existsSync(targetDir) && !mergeMode) {
+		console.error(`Directory '${workerName}' already exists. Use --merge to merge scaffold into existing project.`);
 		process.exit(1);
 	}
 
-	// 1. Clone the template repo
+	// 1. Clone the template repo to temp
 	const repoUrl = 'https://github.com/Livshitz/worker-scaffold.git';
-	execSync(`git clone --depth=1 ${repoUrl} ${workerName}`, { stdio: 'inherit' });
+	const tempDir = join(process.cwd(), `.tmp/scaffold-tmp-${Date.now()}`);
+	execSync(`git clone --depth=1 ${repoUrl} ${tempDir}`, { stdio: 'inherit' });
 
-	// 2. Remove .git to allow new repo
-	rmSync(join(targetDir, '.git'), { recursive: true, force: true });
+	// 2. Remove .git from temp
+	rmSync(join(tempDir, '.git'), { recursive: true, force: true });
 
+	// 3. Read merge globs
+	let mergeGlobs: string[] = [];
+	const mergeFile = join(tempDir, 'merge');
+	if (existsSync(mergeFile)) {
+		mergeGlobs = readFileSync(mergeFile, 'utf8').split(/\r?\n/).map(l => l.trim()).filter(Boolean);
+	}
+
+	const mergeConflicts: string[] = [];
+	function shouldMerge(relPath: string) {
+		// Normalize to remove leading './' or '/'
+		const norm = relPath.replace(/^\.?\/?/, '');
+		return mergeGlobs.some(pattern => minimatch(norm, pattern));
+	}
+
+	// 4. Copy or merge files from temp to target
+	function copyOrMerge(src: string, dest: string, relPath: string) {
+		const stat = statSync(src);
+		if (stat.isDirectory()) {
+			if (mergeMode && !shouldMerge(relPath + '/')) return; // Only process dirs in merge globs
+			if (!existsSync(dest)) {
+				mkdirSync(dest, { recursive: true });
+			}
+			for (const file of readdirSync(src)) {
+				copyOrMerge(join(src, file), join(dest, file), join(relPath, file));
+			}
+		} else {
+			if (mergeMode && !shouldMerge(relPath)) return; // Only process files in merge globs
+			const mergeNeeded = shouldMerge(relPath);
+			if (!existsSync(dest)) {
+				// Ensure parent directory exists
+				const parentDir = require('path').dirname(dest);
+				if (!existsSync(parentDir)) {
+					mkdirSync(parentDir, { recursive: true });
+				}
+				copyFileSync(src, dest);
+			} else if (mergeNeeded) {
+				const existing = readFileSync(dest, 'utf8');
+				const scaffold = readFileSync(src, 'utf8');
+				if (existing !== scaffold) {
+					mergeConflicts.push(relPath);
+					writeFileSync(dest + '.scaffold', scaffold, 'utf8');
+				}
+			}
+		}
+	}
+
+	function copyDir(src: string, dest: string) {
+		// Ensure target directory exists
+		if (!existsSync(dest)) {
+			mkdirSync(dest, { recursive: true });
+		}
+		for (const file of readdirSync(src)) {
+			const srcPath = join(src, file);
+			const destPath = join(dest, file);
+			const relPath = pathRelative(tempDir, srcPath);
+			copyOrMerge(srcPath, destPath, relPath);
+		}
+	}
+
+	function pathRelative(base: string, file: string) {
+		return file.replace(base + '/', '').replace(base, '');
+	}
+
+	copyDir(tempDir, targetDir);
+
+	// 5. Remove temp dir
+	rmSync(tempDir, { recursive: true, force: true });
+
+	// 6. Print merge report
+	if (mergeMode && mergeConflicts.length) {
+		console.log('The following files require manual merging:');
+		mergeConflicts.forEach(f => console.log('  -', f));
+		console.log('Scaffold versions have been saved as .scaffold files.');
+	}
+
+	// 7. Continue with provider-specific cleanup and config updates as before
 	// 3. Remove irrelevant adapters/configs
 	const adaptersPath = join(targetDir, 'api', 'adapters');
-	if (provider === 'cloudflare') {
-		for (const file of readdirSync(adaptersPath)) {
-			if (!['cloudflare.ts', 'debug.ts'].includes(file)) {
-				rmSync(join(adaptersPath, file));
+	if (existsSync(adaptersPath)) {
+		if (provider === 'cloudflare') {
+			for (const file of readdirSync(adaptersPath)) {
+				if (!['cloudflare.ts', 'debug.ts'].includes(file)) {
+					rmSync(join(adaptersPath, file));
+				}
 			}
-		}
-		rmSync(join(targetDir, 'vercel.json'));
-	} else if (provider === 'vercel') {
-		for (const file of readdirSync(adaptersPath)) {
-			if (!['vercel.ts', 'debug.ts'].includes(file)) {
-				rmSync(join(adaptersPath, file));
+			const vercelJson = join(targetDir, 'vercel.json');
+			if (existsSync(vercelJson)) rmSync(vercelJson);
+		} else if (provider === 'vercel') {
+			for (const file of readdirSync(adaptersPath)) {
+				if (!['vercel.ts', 'debug.ts'].includes(file)) {
+					rmSync(join(adaptersPath, file));
+				}
 			}
+			const wranglerToml = join(targetDir, 'wrangler.toml');
+			if (existsSync(wranglerToml)) rmSync(wranglerToml);
 		}
-		rmSync(join(targetDir, 'wrangler.toml'));
 	}
 
 	// 4. Update package.json name
 	const pkgPath = join(targetDir, 'package.json');
-	const pkg = JSON.parse(readFileSync(pkgPath, 'utf8'));
-	pkg.name = workerName;
-	writeFileSync(pkgPath, JSON.stringify(pkg, null, 2));
+	if (existsSync(pkgPath)) {
+		const pkg = JSON.parse(readFileSync(pkgPath, 'utf8'));
+		pkg.name = workerName;
+		writeFileSync(pkgPath, JSON.stringify(pkg, null, 2));
+	}
 
 	// 5. Update wrangler.toml name if present
 	const wranglerPath = join(targetDir, 'wrangler.toml');
