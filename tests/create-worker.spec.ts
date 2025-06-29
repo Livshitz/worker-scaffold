@@ -3,7 +3,7 @@ import { join } from 'path';
 import { execSync } from 'child_process';
 
 const TEST_DIR = '.tmp/test/unit-test-worker';
-const MERGE_TEST_DIR = '.tmp/merge-test-worker';
+const MERGE_TEST_DIR = '.tmp/merge-test';
 const MERGE_FILE = 'merge';
 
 describe('create-worker CLI', () => {
@@ -17,7 +17,7 @@ describe('create-worker CLI', () => {
 	});
 
 	it('should scaffold a new worker with only cloudflare/debug adapters and no .git', () => {
-		execSync(`bunx tsx bin/create-worker.ts --yes --name=${TEST_DIR} --provider=cloudflare`, { stdio: 'inherit' });
+		execSync(`bunx tsx bin/create-worker.ts --yes --dir=${TEST_DIR} --name=test-worker --provider=cloudflare`, { stdio: 'inherit' });
 		expect(existsSync(TEST_DIR)).toBe(true);
 		expect(existsSync(join(TEST_DIR, '.git'))).toBe(false);
 		const adapters = readdirSync(join(TEST_DIR, 'api', 'adapters'));
@@ -32,9 +32,9 @@ describe('create-worker CLI', () => {
 		writeFileSync(join(MERGE_TEST_DIR, 'custom.txt'), 'custom content');
 		writeFileSync(join(MERGE_TEST_DIR, 'package.json'), '{"name":"existing-project"}');
 		// Run merge
-		execSync(`bunx tsx bin/create-worker.ts --merge --yes --name=${MERGE_TEST_DIR} --provider=cloudflare`, { stdio: 'inherit' });
-		// vercel.json should exist (copied from scaffold)
-		expect(existsSync(join(MERGE_TEST_DIR, 'vercel.json'))).toBe(true);
+		execSync(`bunx tsx bin/create-worker.ts --merge --yes --dir=${MERGE_TEST_DIR} --name=merge-test-worker --provider=cloudflare`, { stdio: 'inherit' });
+		// vercel.json should NOT exist after provider cleanup for cloudflare
+		expect(existsSync(join(MERGE_TEST_DIR, 'vercel.json'))).toBe(false);
 		// custom.txt should remain untouched
 		expect(readFileSync(join(MERGE_TEST_DIR, 'custom.txt'), 'utf8')).toBe('custom content');
 		// api/ should exist (copied from scaffold)

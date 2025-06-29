@@ -11,11 +11,13 @@ const argv = minimist(process.argv.slice(2));
 const yesMode = argv.yes || argv.y;
 const mergeMode = argv.merge || false;
 const argWorkerName = argv.name || argv.n;
+const argTargetDir = argv.dir || argv.d;
 const argProvider = argv.provider || argv.p;
 
 (async () => {
 	let workerName = argWorkerName || 'new-worker';
 	let provider = argProvider || 'cloudflare';
+	let targetDir = argTargetDir ? resolve(argTargetDir) : process.cwd();
 
 	if (!yesMode) {
 		const response = await prompts([
@@ -24,6 +26,12 @@ const argProvider = argv.provider || argv.p;
 				name: 'workerName',
 				message: 'Worker name:',
 				initial: workerName,
+			},
+			{
+				type: 'text',
+				name: 'targetDir',
+				message: 'Target directory:',
+				initial: targetDir,
 			},
 			{
 				type: 'select',
@@ -38,16 +46,16 @@ const argProvider = argv.provider || argv.p;
 			},
 		]);
 		workerName = response.workerName;
+		targetDir = resolve(response.targetDir);
 		provider = response.provider;
 	}
 
-	const targetDir = resolve(process.cwd(), workerName);
-	if (existsSync(targetDir) && !mergeMode) {
-		console.error(`Directory '${workerName}' already exists. Use --merge to merge scaffold into existing project.`);
+	console.log(`\n[worker-scaffold] Initializing worker project in: '${targetDir}' (name: ${workerName}, provider: ${provider}${mergeMode ? ', merge mode' : ''})`);
+
+	if (existsSync(targetDir) && readdirSync(targetDir).length > 0 && !mergeMode) {
+		console.error(`Directory '${targetDir}' already exists and is not empty. Use --merge to merge scaffold into existing project.`);
 		process.exit(1);
 	}
-
-	console.log(`\n[worker-scaffold] Initializing worker project: '${workerName}' (provider: ${provider}${mergeMode ? ', merge mode' : ''})`);
 
 	if (mergeMode) {
 		console.log('[worker-scaffold] Merge mode enabled: only files matching patterns in the merge file will be processed.');

@@ -28,12 +28,16 @@ You can scaffold a new worker project using the built-in CLI.
 
     #### CLI Options:
     - `--yes` / `-y`: Non-interactive mode (no prompts)
-    - `--name` / `-n`: Name of the new worker
+    - `--name` / `-n`: Name of the worker (used in config files)
+    - `--dir` / `-d`: Target directory to initialize the worker in (default: current directory)
     - `--provider` / `-p`: Provider to scaffold for (`cloudflare`, `vercel`, or `both`)
 
         ##### Example:
         ```sh
-        bunx https://github.com/Livshitz/worker-scaffold --yes --name=api-worker --provider=both
+        # Scaffold in current directory, set worker name
+        bunx https://github.com/Livshitz/worker-scaffold --yes --name=my-worker --provider=cloudflare
+        # Scaffold in a custom directory
+        bunx https://github.com/Livshitz/worker-scaffold --yes --dir=./my-worker-folder --name=my-worker --provider=cloudflare
         ```
 
 <!-- 
@@ -91,10 +95,10 @@ Create a new file in `api/routes/v1/`.
 
 ## Initializing in an Existing Project (Merge Mode)
 
-You can initialize the worker scaffold in an existing project using the `--merge` flag:
+You can initialize the worker scaffold in an existing project using the `--merge` flag (optionally with `--dir`):
 
 ```sh
-bunx https://github.com/Livshitz/worker-scaffold --merge
+bunx https://github.com/Livshitz/worker-scaffold --merge --dir=./existing-folder
 ```
 
 - The CLI will copy new files and, for files/folders listed in the `merge` file, if a file already exists and differs, it will:
