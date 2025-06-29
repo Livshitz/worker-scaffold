@@ -2,3 +2,4 @@ api/**
 .github/**
 vercel.json
 wrangler.toml
+package.json
